@@ -1,0 +1,6 @@
+.ticketContainer{
+    display: flex;
+    gap: 16px; 
+    margin-top: 30px;
+    margin-left: 100px;
+}
