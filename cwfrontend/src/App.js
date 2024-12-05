@@ -1,9 +1,10 @@
 import './App.css';
 import Home from './Pages/Home'
-import HomeCustomer from './Pages/HomeCustomer';
-import HomeVendor from './Pages/HomeVendor';
 import AboutUs from './Pages/AboutUs';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import LogingPage from './Pages/LogingPage';
+import AddTicket from './Pages/AddTicket';
+import RegisterPage from './Pages/RegisterPage';
 
 
 function App() {
@@ -13,9 +14,10 @@ function App() {
         <Routes>
 
           <Route path="/" element={<Home/>}/>
-          <Route path="/customer" element={<HomeCustomer />} />
-          <Route path="/vendor" element={<HomeVendor />} />
+          <Route path="/loging" element={<LogingPage/>}/>
+          <Route path="/addtickets" element={<AddTicket/>}/>
           <Route path="/about" element={<AboutUs />} />
+          <Route path="/register" element={<RegisterPage/>} />
 
         </Routes>
 
@@ -24,10 +26,6 @@ function App() {
 
     </Router>
 
-
-    
-
-      
     
   );
 }

@@ -14,7 +14,7 @@ export default function TicketCard() {
       <Card.Body style={{ padding: '5px' }}>
       <Card.Text style={{ fontSize: '12px' }}>Ticket No:</Card.Text>
         <Card.Text style={{ fontSize: '12px' }}>Ticket Price:</Card.Text>
-        <Button variant="primary" size="sm">Buy</Button> {/* Smaller button */}
+        <Button variant="outline-success" size='sm'>Add Ticket</Button>
       </Card.Body>
     </Card>
   );
