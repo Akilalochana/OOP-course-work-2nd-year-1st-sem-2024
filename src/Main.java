@@ -2,6 +2,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.io.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Scanner;
 
 public class Main {
@@ -29,41 +32,69 @@ public class Main {
 
         TicketPool ticketPool = new TicketPool(config.maxTicketCapacity);
 
-        Thread[] vendorThreads = new Thread[config.totalTickets];
-        Thread[] customerThreads = new Thread[config.totalTickets];
-
-        // Create and start Vendor threads
-        for (int i = 0; i < config.totalTickets; i++) {
-            Vendor vendor = new Vendor(i + 1, config.ticketReleaseRate, ticketPool);
-            vendorThreads[i] = new Thread(vendor, "Vendor-" + (i + 1));
+        // Create and start Vendor threads manually
+        Thread[] vendorThreads = new Thread[config.numberOfVendors];
+        for (int i = 0; i < config.numberOfVendors; i++) {
+            Vendor vendor = new Vendor(i + 1, config.ticketReleaseRate, ticketPool, config.totalTickets);
+            vendorThreads[i] = new Thread(vendor);
             vendorThreads[i].start();
         }
 
-        // Create and start Customer threads
-        for (int i = 0; i < config.totalTickets; i++) {
-            Customer customer = new Customer(ticketPool, config.customerRetrievalRate, i + 1);
-            customerThreads[i] = new Thread(customer, "Customer-" + (i + 1));
+        // Create and start Customer threads manually
+        Thread[] customerThreads = new Thread[config.numberOfCustomers];
+        Customer[] customers = new Customer[config.numberOfCustomers];  // Store customer references
+        for (int i = 0; i < config.numberOfCustomers; i++) {
+            customers[i] = new Customer(ticketPool, config.customerRetrievalRate, i + 1);
+            customerThreads[i] = new Thread(customers[i]);
             customerThreads[i].start();
         }
 
-        // Wait for all threads to complete
-        try {
-            for (Thread vendorThread : vendorThreads) {
-                vendorThread.join();
+        // Wait for all vendor threads to finish
+        for (Thread thread : vendorThreads) {
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-            for (Thread customerThread : customerThreads) {
-                customerThread.join();
+        }
+
+        // Wait for all customer threads to finish
+        for (Thread thread : customerThreads) {
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-        } catch (InterruptedException e) {
-            System.out.println("Error waiting for threads to finish: " + e.getMessage());
+        }
+
+        // Log the tickets purchased by each customer
+        System.out.println("\nTickets Purchased by Customers:");
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        for (Customer customer : customers) {
+            List<Ticket> purchasedTickets = customer.getPurchasedTickets();
+            for (Ticket ticket : purchasedTickets) {
+
+                String currentDateTime = LocalDateTime.now().format(formatter);
+                System.out.println("[" + currentDateTime + "] Customer ID-" + customer.customerId + " purchased a ticket: " + ticket);
+            }
         }
 
         System.out.println("All tickets have been processed. System shutting down.");
     }
 
+
     private static Configuration getNewConfiguration(Scanner scanner) {
         System.out.print("Enter total number of tickets: ");
         int totalTickets = scanner.nextInt();
+        scanner.nextLine();
+
+        System.out.print("Enter number of vendors: ");
+        int numberOfVendors = scanner.nextInt();
+        scanner.nextLine();
+
+        System.out.print("Enter number of customers: ");
+        int numberOfCustomers = scanner.nextInt();
         scanner.nextLine();
 
         System.out.print("Enter ticket release rate (per second): ");
@@ -78,7 +109,7 @@ public class Main {
         int maxTicketCapacity = scanner.nextInt();
         scanner.nextLine();
 
-        return new Configuration(totalTickets, ticketReleaseRate, customerRetrievalRate, maxTicketCapacity);
+        return new Configuration(totalTickets, numberOfVendors, numberOfCustomers, ticketReleaseRate, customerRetrievalRate, maxTicketCapacity);
     }
 
     private static void saveConfiguration(Configuration config) {
@@ -90,7 +121,7 @@ public class Main {
         }
     }
 
-    private static Configuration loadConfiguration() {
+    static Configuration loadConfiguration() {
         try (Reader reader = new FileReader(CONFIG_FILE)) {
             Gson gson = new Gson();
             return gson.fromJson(reader, Configuration.class);
