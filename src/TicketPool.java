@@ -15,16 +15,17 @@ class TicketPool {
     }
 
     public synchronized void addTicket(Ticket ticket, int vendorId) {
-        while (ticketQueue.size() >= maximumTicketCapacity || totalTicketsAdded >= totalTickets) {
+        while (Main.running.get() && (ticketQueue.size() >= maximumTicketCapacity || totalTicketsAdded >= totalTickets)) {
             if (totalTicketsAdded >= totalTickets) {
-                return; // All tickets have been added
+                return;
             }
             try {
                 wait();
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                return;
             }
         }
+        if (!Main.running.get()) return;
         ticketQueue.add(ticket);
         totalTicketsAdded++;
         System.out.println("Ticket added by Vendor ID-" + vendorId + " / current size is - " + ticketQueue.size());
@@ -32,17 +33,18 @@ class TicketPool {
     }
 
     public synchronized Ticket buyTicket(int customerId) {
-        while (ticketQueue.isEmpty()) {
+        while (Main.running.get() && ticketQueue.isEmpty()) {
             if (totalTicketsSold >= totalTickets) {
-                return null; // No more tickets available
+                return null;
             }
             try {
                 System.out.println("Customer ID-" + customerId + " is waiting for tickets.....");
                 wait();
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                return null;
             }
         }
+        if (!Main.running.get()) return null;
         Ticket ticket = ticketQueue.poll();
         if (ticket != null) {
             totalTicketsSold++;

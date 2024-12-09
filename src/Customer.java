@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 import java.util.List;
 
-public class Customer implements Runnable{
+public class Customer implements Runnable {
     private final TicketPool ticketPool;
     private final int customerRetrievalRate;
     final int customerId;
@@ -16,7 +16,7 @@ public class Customer implements Runnable{
 
     @Override
     public void run() {
-        while (true) {
+        while (Main.running.get()) {
             try {
                 Thread.sleep(customerRetrievalRate * 1000L);
                 Ticket ticket = ticketPool.buyTicket(customerId);
@@ -28,10 +28,11 @@ public class Customer implements Runnable{
                     break;
                 }
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                break;
             }
         }
     }
+
     public List<Ticket> getPurchasedTickets() {
         return purchasedTickets;
     }

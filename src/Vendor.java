@@ -16,18 +16,19 @@ class Vendor implements Runnable {
 
     @Override
     public void run() {
-        while (true) {
+        while (Main.running.get()) {
             try {
                 Thread.sleep(ticketReleaseRate * 1000L);
                 synchronized (Vendor.class) {
                     if (ticketIdCounter >= totalTickets) {
-                        break; // All tickets have been added
+                        break;
                     }
                     Ticket ticket = new Ticket(++ticketIdCounter, "Event 1", new BigDecimal("1500"));
                     ticketPool.addTicket(ticket, vendorId);
                 }
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                // Thread was interrupted, exit the loop
+                break;
             }
         }
     }

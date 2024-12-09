@@ -6,9 +6,11 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Main {
     private static final String CONFIG_FILE = "config.json";
+    public static final AtomicBoolean running = new AtomicBoolean(true);
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -32,7 +34,6 @@ public class Main {
 
         TicketPool ticketPool = new TicketPool(config.maxTicketCapacity);
 
-        // Create and start Vendor threads manually
         Thread[] vendorThreads = new Thread[config.numberOfVendors];
         for (int i = 0; i < config.numberOfVendors; i++) {
             Vendor vendor = new Vendor(i + 1, config.ticketReleaseRate, ticketPool, config.totalTickets);
@@ -40,16 +41,61 @@ public class Main {
             vendorThreads[i].start();
         }
 
-        // Create and start Customer threads manually
         Thread[] customerThreads = new Thread[config.numberOfCustomers];
-        Customer[] customers = new Customer[config.numberOfCustomers];  // Store customer references
+        Customer[] customers = new Customer[config.numberOfCustomers];
         for (int i = 0; i < config.numberOfCustomers; i++) {
             customers[i] = new Customer(ticketPool, config.customerRetrievalRate, i + 1);
             customerThreads[i] = new Thread(customers[i]);
             customerThreads[i].start();
         }
 
-        // Wait for all vendor threads to finish
+        Thread inputThread = new Thread(() -> {
+            Scanner inputScanner = new Scanner(System.in);
+            System.out.println("Press 's' and Enter to stop the simulation at any time.");
+            while (running.get()) {
+                if (inputScanner.hasNextLine()) {
+                    String input = inputScanner.nextLine();
+                    if (input.equalsIgnoreCase("s")) {
+                        running.set(false);
+                        System.out.println("Stopping the simulation...");
+                        break;
+                    }
+                }
+            }
+        });
+        inputThread.start();
+
+        while (running.get()) {
+            boolean allFinished = true;
+            for (Thread thread : vendorThreads) {
+                if (thread.isAlive()) {
+                    allFinished = false;
+                    break;
+                }
+            }
+            for (Thread thread : customerThreads) {
+                if (thread.isAlive()) {
+                    allFinished = false;
+                    break;
+                }
+            }
+            if (allFinished) {
+                running.set(false);
+            }
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        for (Thread thread : vendorThreads) {
+            thread.interrupt();
+        }
+        for (Thread thread : customerThreads) {
+            thread.interrupt();
+        }
+
         for (Thread thread : vendorThreads) {
             try {
                 thread.join();
@@ -57,8 +103,6 @@ public class Main {
                 e.printStackTrace();
             }
         }
-
-        // Wait for all customer threads to finish
         for (Thread thread : customerThreads) {
             try {
                 thread.join();
@@ -67,22 +111,20 @@ public class Main {
             }
         }
 
-        // Log the tickets purchased by each customer
-        System.out.println("\nTickets Purchased by Customers:");
-
+        System.out.println("\nTickets Sold:");
+        int totalSold = 0;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         for (Customer customer : customers) {
             List<Ticket> purchasedTickets = customer.getPurchasedTickets();
             for (Ticket ticket : purchasedTickets) {
-
                 String currentDateTime = LocalDateTime.now().format(formatter);
-                System.out.println("[" + currentDateTime + "] Customer ID-" + customer.customerId + " purchased a ticket: " + ticket);
+                System.out.println("[" + currentDateTime + "] Customer ID-" + customer.customerId + " purchased: " + ticket);
+                totalSold++;
             }
         }
 
-        System.out.println("All tickets have been processed. System shutting down.");
+        System.out.println("Simulation stopped. Total tickets sold: " + totalSold);
     }
-
 
     private static Configuration getNewConfiguration(Scanner scanner) {
         System.out.print("Enter total number of tickets: ");
