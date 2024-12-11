@@ -25,11 +25,10 @@ const navigate = useNavigate();
           </Navbar.Brand>
           <Nav className="ms-auto"> 
             <Nav.Link href="#home" style={{ color: '#000' }} onClick={()=>navigate("/")}>Home</Nav.Link>
-            <Nav.Link href="#home" style={{ color: '#000' }}>About Us</Nav.Link>
-            <Nav.Link href="#features" style={{ color: '#000' }}></Nav.Link>
+            <Nav.Link href="#" className="ms-2" style={{ color: '#000' }} onClick={()=>navigate("/simulationPage")}>Configuration</Nav.Link>
             <Nav.Link href="#pricing" style={{ color: '#000' }}></Nav.Link>
             <Button variant="outline-success" onClick={()=>navigate('./loging')}>Add Ticket</Button>
-            <Button variant="outline-success" className="ms-2">Buy Ticket</Button>
+            <Button variant="outline-success" className="ms-2" onClick={()=>navigate('/venderlogin')}>Buy Ticket</Button>
           </Nav>
         </Container>
       </Navbar>

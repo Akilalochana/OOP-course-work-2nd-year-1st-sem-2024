@@ -8,7 +8,7 @@ export default function VendorLoginPage() {
     <>
         <CustomNavbar />
     <div className='logingcss'>
-        <Loging CorV="Customer Login"/>
+        <Loging CorV="Vendor Login" loginPath="/venderlogin" registerPath="/venderregister"/>
     </div>
     </>
   )

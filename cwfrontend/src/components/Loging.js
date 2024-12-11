@@ -11,10 +11,11 @@ export default function Loging(props) {
   return (
     <>
     <div className='loginsignbtn'>
-    <Button variant="primary" type="submit" onClick={()=>navigate("/loging")} >
+       
+    <Button variant="primary" type="submit" onClick={()=>navigate(props.loginPath)} >
       LOGIN
     </Button>
-    <Button variant="primary" type="submit" className="ms-5" onClick={()=>navigate("/register")}>
+    <Button variant="primary" type="submit" className="ms-5" onClick={()=>navigate(props.registerPath)}>
       REGISTER
     </Button>
     </div>

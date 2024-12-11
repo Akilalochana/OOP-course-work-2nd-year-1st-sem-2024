@@ -8,7 +8,14 @@ export default function Register(props) {
     const navigate = useNavigate();
   return (
     <>
-    {props.path}
+        <div className='loginsignbtn'>
+    <Button variant="primary" type="submit" onClick={()=>navigate("/loging")} >
+      LOGIN
+    </Button>
+    <Button variant="primary" type="submit" className="ms-5" onClick={()=>navigate("/register")}>
+      REGISTER
+    </Button>
+    </div>
 
     <Form>
         <h1>{props.CorV}</h1>

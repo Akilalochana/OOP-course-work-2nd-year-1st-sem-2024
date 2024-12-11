@@ -9,7 +9,7 @@ export default function LogingPage() {
     <>
         <CustomNavbar />
     <div className='logingcss'>
-        <Loging CorV="Customer Login"/>
+        <Loging CorV="Customer Login" loginPath="/loging" registerPath="/register"/>
     </div></>
 
   )

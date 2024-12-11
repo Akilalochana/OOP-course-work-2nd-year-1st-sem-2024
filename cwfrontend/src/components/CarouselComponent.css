@@ -5,10 +5,10 @@
    border-radius: 10px;
   }
   
-.slideImgs{
+  .slideImgs {
     width: 1000px;
     height: 370px;
-    margin: auto; 
+    margin: auto;
     border-radius: 30px;
-    
+    object-fit: cover; 
 }
